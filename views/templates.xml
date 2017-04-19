@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!-- Yotech Tools menu setting -->
+        <record id="action_yotech_o2o_config" model="ir.actions.act_window">
+            <field name="name">Configure Yotech o2o</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">o2o_simple.config.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+        </record>
+
+        <menuitem name="Yotech o2o"
+            id="root_menu_yotech_o2o" parent="base.menu_config" sequence="14" action="action_yotech_o2o_config"/>
+
+        <record id="view_yotech_o2o_config_settings" model="ir.ui.view">
+            <field name="name">o2o_simple.config.settings</field>
+            <field name="model">o2o_simple.config.settings</field>
+            <field name="arch" type="xml">
+                <form string="Configure Yotech o2o" class="oe_form_configuration">
+                    <header>
+                        <button string="Apply" type="object" name="execute" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" type="object" name="cancel" class="oe_link"/>
+                    </header>
+
+                    <separator string="Connector"/>
+                    <group>
+                        <div>
+                            <label for="yo_o2o_instance_type" string="Instance Type"/>
+                            <field name="yo_o2o_instance_type" class="oe_inline"/>
+                        </div>
+                    </group>
+                    <group attrs="{'invisible': [('yo_o2o_instance_type','=', 'master' ) ] }" >
+                        <div>
+                            <label for="yo_o2o_username" string="Dist User"/>
+                            <field name="yo_o2o_username" class="oe_inline"/>
+                        </div>
+                        <div>
+                            <label for="yo_o2o_password" string="Password"/>
+                            <field name="yo_o2o_password" password="True" class="oe_inline"/>
+                        </div>
+                        <div>
+                            <label for="yo_o2o_dbname" string="DataBase name"/>
+                            <field name="yo_o2o_dbname" class="oe_inline"/>
+                        </div>
+                        <div>
+                            <label for="yo_o2o_url" string="Url (ex:www.yotech.pro)"/>
+                            <field name="yo_o2o_url" class="oe_inline"/>
+                        </div>
+                        <div>
+                            <label for="yo_o2o_port" string="Port (ex:8069)"/>
+                            <field name="yo_o2o_port" class="oe_inline"/>
+                        </div>
+                        <div>
+                            <label for="yo_o2o_default_dist_warehouse_id" string="Dist Warehouse (ex:2)"/>
+                            <field name="yo_o2o_default_dist_warehouse_id" class="oe_inline"/>
+                        </div>
+                        <div>
+                            <label for="yo_o2o_default_product_internal_categ_id" string="Product Internal Categ (ex:2)"/>
+                            <field name="yo_o2o_default_product_internal_categ_id" class="oe_inline"/>
+                        </div>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="yotech_odoo2odoo_simple_view_order_form" model="ir.ui.view">
+            <field name="name">sale.order.form</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <!-- <xpath expr="//header" position="inside">
+                    <button name="push_main_instance" states="draft,sent,invoice_except" string="Push Odoo main instance" groups="base.group_user"/>
+                </xpath> -->
+                <field name="weight_total" position="after">
+                    <group string=" Yotech Odoo2Odoo">
+                        <button colspan="2" name="push_main_instance" string="Export Order to Account Mgn system" type="object" icon="gtk-execute" class="oe_inline"/>
+                        <field name="dist_order_id" readonly="True" />
+                    </group>
+                </field>
+            </field>
+        </record>
+
+        <record id="yotech_odoo2odoo_simple_view_product_product_form" model="ir.ui.view">
+            <field name="name">yotech_odoo2odoo.product.product.form</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
+            <field name="arch" type="xml">
+                <field name="default_code" position="after">
+                    <group string=" Yotech Odoo2Odoo">
+                        <field name="dist_product_id" />
+                    </group>
+                </field>
+            </field>
+        </record>
+
+    </data>
+</openerp>
