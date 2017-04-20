@@ -26,8 +26,9 @@ from odoo.tools.translate import html_translate
 import logging
 _logger = logging.getLogger(__name__)
 
-class o2o_simple_config_settings(models.TransientModel):
-    _name = 'o2o_simple.config.settings'
+
+class O2osimpleConfigSettings(models.TransientModel):
+    _name = 'o2osimple.config.settings'
     _inherit = 'res.config.settings'
 
     yo_o2o_username = fields.Char(string='Username')
@@ -41,14 +42,6 @@ class o2o_simple_config_settings(models.TransientModel):
     ], "Instance Type", default='slave', help="Adds an availability status on the web product page.")
     yo_o2o_default_dist_warehouse_id = fields.Char(string='Default Dist WareHouse ID')
     yo_o2o_default_product_internal_categ_id = fields.Char(string='Default Product internal Categ ID')
-
-    # @api.model
-    # def get_default_o2o_simple_config_settings(self):
-    #     result = {
-    #         'username': self.env['ir.values'].get_defaults_dict('o2o_simple_config_settings').get('username'),
-    #         'password': self.env['ir.values'].get_defaults_dict('o2o_simple_config_settings').get('password'),
-    #     }
-    #     return result
 
     @api.model
     def set_o2o_simple_config(self):
@@ -80,7 +73,7 @@ class o2o_simple_config_settings(models.TransientModel):
     #     return {'sale_delivery_settings': sale_delivery_settings}
 
     @api.model
-    def get_default_o2o_simple_config(self, fields):
+    def get_default_o2o_simple_config(self,fields):
         get_param = self.env['ir.config_parameter'].get_param
         username = get_param('yo_o2o_username', default='')
         password = get_param('yo_o2o_password', default='')
@@ -103,7 +96,7 @@ class o2o_simple_config_settings(models.TransientModel):
         }
 
 
-class res_partner(models.Model):
+class ResPartner(models.Model):
     _inherit = 'res.partner'
 
     dist_partner_id = fields.Integer('Distant Partner ID', default=0)
