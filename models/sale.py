@@ -37,7 +37,7 @@ class SaleOrder(models.Model):
 
         _logger.info("--> _main_odoo_instance_connect <--")
 
-        o2o_simple_settings = self.env['o2o_simple.config.settings'].get_default_o2o_simple_config([])
+        o2o_simple_settings = self.env['o2osimple.config.settings'].get_default_o2o_simple_config([])
         _logger.info("o2o_simple_settings =) " + str(o2o_simple_settings))
 
         username = o2o_simple_settings['yo_o2o_username']
