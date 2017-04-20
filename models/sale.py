@@ -47,10 +47,12 @@ class SaleOrder(models.Model):
         url = o2o_simple_settings['yo_o2o_url']
         port = o2o_simple_settings['yo_o2o_port']
 
+
         settings = {
             'default_dist_warehouse_id' : o2o_simple_settings['yo_o2o_default_dist_warehouse_id'],
             'default_product_internal_categ_id' : o2o_simple_settings['yo_o2o_default_product_internal_categ_id'],
             'instance_type': o2o_simple_settings['yo_o2o_instance_type'],
+            'sale_order_prefix' : o2o_simple_settings['yo_o2o_sale_order_prefix'],
         }
 
         error = False
@@ -183,14 +185,25 @@ class SaleOrder(models.Model):
                 'warehouse_id' : warehouse_id,
 #                'order_line' : dist_order_lines_info,
             }
-            _logger.info("dist_order_info " + str(dist_order_info))
 
             if order.dist_order_id:
                 _logger.info("Update distant order")
             else :
                 _logger.info("Create distant order")
-
                 new_dist_order_id = odoo_connect['OdooMainInstance'].create('sale.order',dist_order_info)
+
+                # Update Order name to tag Order to main instance
+                get_new_dist_order_info = dist_order_obj.browse(new_dist_order_id)
+                
+                _logger.info("get_new_dist_order_info " + str(get_new_dist_order_info))
+
+                sale_order_prefix = odoo_connect['settings'].get('sale_order_prefix')
+
+                get_new_dist_order_info = {
+                    'name' : get_new_dist_order_info['name'].replace('SO', sale_order_prefix)
+                }
+
+                odoo_connect['OdooMainInstance'].write('sale.order',new_dist_order_id,get_new_dist_order_info)
 
                 for line in order.order_line:
                     _logger.info("line.discount " + str(line.discount))
@@ -212,6 +225,7 @@ class SaleOrder(models.Model):
                 # update local info
                 local_order_info = {
                     'dist_order_id' : new_dist_order_id,
+                    'dist_order_name' : get_new_dist_order_info['name'],
                 }            
                 order.write(local_order_info)
 

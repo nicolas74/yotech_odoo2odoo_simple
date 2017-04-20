@@ -42,6 +42,7 @@ class O2osimpleConfigSettings(models.TransientModel):
     ], "Instance Type", default='slave', help="Adds an availability status on the web product page.")
     yo_o2o_default_dist_warehouse_id = fields.Char(string='Default Dist WareHouse ID')
     yo_o2o_default_product_internal_categ_id = fields.Char(string='Default Product internal Categ ID')
+    yo_o2o_sale_order_prefix = fields.Char(string='Sale Order Prefix')
 
     @api.model
     def set_o2o_simple_config(self):
@@ -62,15 +63,8 @@ class O2osimpleConfigSettings(models.TransientModel):
         set_param('yo_o2o_default_dist_warehouse_id', default_dist_warehouse_id)
         default_product_internal_categ_id = self[0].yo_o2o_default_product_internal_categ_id or ''
         set_param('yo_o2o_default_product_internal_categ_id', default_product_internal_categ_id)
-
-    # @api.model
-    # def get_default_sale_delivery_settings(self, fields):
-    #     sale_delivery_settings = 'none'
-    #     if self.env['ir.module.module'].search([('name', '=', 'delivery')], limit=1).state in ('installed', 'to install', 'to upgrade'):
-    #         sale_delivery_settings = 'internal'
-    #         if self.env['ir.module.module'].search([('name', '=', 'website_sale_delivery')], limit=1).state in ('installed', 'to install', 'to upgrade'):
-    #             sale_delivery_settings = 'website'
-    #     return {'sale_delivery_settings': sale_delivery_settings}
+        sale_order_prefix = self[0].yo_o2o_sale_order_prefix or ''
+        set_param('yo_o2o_sale_order_prefix', sale_order_prefix)
 
     @api.model
     def get_default_o2o_simple_config(self,fields):
@@ -83,6 +77,7 @@ class O2osimpleConfigSettings(models.TransientModel):
         instance_type = get_param('yo_o2o_instance_type', default='')
         default_dist_warehouse_id = get_param('yo_o2o_default_dist_warehouse_id', default='')
         default_product_internal_categ_id = get_param('yo_o2o_default_product_internal_categ_id', default='')
+        sale_order_prefix = get_param('yo_o2o_sale_order_prefix', default='')
 
         return {
             'yo_o2o_username': username,
@@ -93,6 +88,7 @@ class O2osimpleConfigSettings(models.TransientModel):
             'yo_o2o_instance_type' : instance_type,
             'yo_o2o_default_dist_warehouse_id' : default_dist_warehouse_id,
             'yo_o2o_default_product_internal_categ_id' : default_product_internal_categ_id,
+            'yo_o2o_sale_order_prefix' : sale_order_prefix,
         }
 
 
@@ -122,4 +118,5 @@ class SaleOrder(models.Model):
         return new_id
 
     dist_order_id = fields.Integer('Distant Order ID', default=0)
+    dist_order_name = fields.Char(string='Distant Order Name')
 
