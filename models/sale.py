@@ -1,11 +1,27 @@
-from datetime import datetime, timedelta
-import time
-from openerp import SUPERUSER_ID
-from openerp.osv import fields, osv
-from openerp.tools.translate import _
-from openerp.tools import DEFAULT_SERVER_DATE_FORMAT, DEFAULT_SERVER_DATETIME_FORMAT
-import openerp.addons.decimal_precision as dp
-from openerp import workflow
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+#    Yotech module
+#    Copyright (C) 2014-2017 Yotech (<http://yotech.pro>).
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+
+from odoo import api, fields, models, tools, _
+import odoo.addons.decimal_precision as dp
+from odoo.tools.translate import html_translate
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -13,26 +29,28 @@ _logger = logging.getLogger(__name__)
 import oerplib
 
 
-class sale_order(osv.osv):
+class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    def _main_odoo_instance_connect(self, cr, uid, ids, context=None):
+    @api.multi
+    def _main_odoo_instance_connect(self):
 
         _logger.info("--> _main_odoo_instance_connect <--")
-        o2o_simple_config_settings = self.pool.get('o2o_simple.config.settings').search(cr, uid, [])
-        _logger.info("o2o_simple_config_settings =) "+ str(o2o_simple_config_settings))
 
-        username = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_username')
-        password = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_password')
-        url = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_url')
-        port = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_port')
-        dbname = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_dbname')
-        default_dist_warehouse_id = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_default_dist_warehouse_id')
-        default_product_internal_categ_id = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_default_product_internal_categ_id')
+        o2o_simple_settings = self.env['o2o_simple.config.settings'].get_default_o2o_simple_config([])
+        _logger.info("o2o_simple_settings =) " + str(o2o_simple_settings))
+
+        username = o2o_simple_settings['yo_o2o_username']
+        password = o2o_simple_settings['yo_o2o_password']
+        dbname = o2o_simple_settings['yo_o2o_dbname']
+
+        url = o2o_simple_settings['yo_o2o_url']
+        port = o2o_simple_settings['yo_o2o_port']
 
         settings = {
-            'default_dist_warehouse_id' : default_dist_warehouse_id,
-            'default_product_internal_categ_id' : default_product_internal_categ_id,
+            'default_dist_warehouse_id' : o2o_simple_settings['yo_o2o_default_dist_warehouse_id'],
+            'default_product_internal_categ_id' : o2o_simple_settings['yo_o2o_default_product_internal_categ_id'],
+            'instance_type': o2o_simple_settings['yo_o2o_instance_type'],
         }
 
         error = False
@@ -55,21 +73,22 @@ class sale_order(osv.osv):
 
             # Simple 'raw' query
             user_data = oerp.execute('res.users', 'read', [user.id])
-            #print(user_data)
+            print(user_data)
         else:
             return False
 
         return {'OdooMainInstance': oerp , 'user': user , 'settings' : settings }
 
-    def _export_partner(self, cr, uid, ids, odoo_connect, context=None):
+    @api.multi
+    def _export_partner(self, odoo_connect):
         """ Export partner if needed """
 
         _logger.info("--> _export_partner <--")
-        order_obj = self.pool.get('sale.order')
-        res_partner_obj = self.pool.get('res.partner')
+
         dist_partner_obj = odoo_connect['OdooMainInstance'].get('res.partner')
 
-        for order in order_obj.browse(cr, uid, ids):
+
+        for order in self:
             _logger.info("order.partner_id =) " + str(order.partner_id))
             dist_partner_info = {
                 'name': order.partner_id.name,
@@ -96,23 +115,23 @@ class sale_order(osv.osv):
                 new_dist_partner_id = odoo_connect['OdooMainInstance'].create('res.partner',dist_partner_info)
                 _logger.info("dist_partner_info =) " + str(dist_partner_info))
                 local_partner_info = {
-                    'dist_partner_id' : new_dist_partner_id,                    
+                    'dist_partner_id' : new_dist_partner_id,
                 }
-                res_partner_obj.write(cr, uid, [order.partner_id.id], local_partner_info, context=context)
+                order.partner_id.write(local_partner_info)
 
         return True
 
-    def _export_products(self, cr, uid, ids, odoo_connect, context=None):
+    @api.multi
+    def _export_products(self, odoo_connect):
         """ Export products if needed """
 
         _logger.info("--> _export_products <--")
-        order_obj = self.pool.get('sale.order')
-        product_product_obj = self.pool.get('product.product')
+
         dist_product_obj = odoo_connect['OdooMainInstance'].get('product.product')
 
         default_product_internal_categ_id = odoo_connect['settings'].get('default_product_internal_categ_id')
 
-        for order in order_obj.browse(cr, uid, ids):
+        for order in self:
 
             for line in order.order_line:
                 dist_product_info = {
@@ -136,11 +155,12 @@ class sale_order(osv.osv):
                     local_product_info = {
                         'dist_product_id' : new_dist_product_id,
                     }
-                    product_product_obj.write(cr, uid, [line.product_id.id], local_product_info, context=context)
+                    line.product_id.write(local_product_info)
 
         return True
 
-    def _export_order(self, cr, uid, ids, odoo_connect, context=None):
+    @api.multi
+    def _export_order(self, odoo_connect):
         """ Export order and order_line if needed """
 
         _logger.info("--> _export_order <--")
@@ -148,7 +168,7 @@ class sale_order(osv.osv):
         order_line_obj = self.pool.get('sale.order')
         dist_order_obj = odoo_connect['OdooMainInstance'].get('sale.order')
 
-        for order in order_obj.browse(cr, uid, ids):
+        for order in self:
 
             if odoo_connect['settings'].get('default_dist_warehouse_id'):
                 warehouse_id = odoo_connect['settings'].get('default_dist_warehouse_id')
@@ -180,7 +200,7 @@ class sale_order(osv.osv):
                         'product_uom_qty' : line.product_uom_qty,
                         'price_unit' : line.price_unit,
                         'discount' : line.discount,
-                        'delay' : line.delay,
+                        #'delay' : line.delay,
                         'name' : line.name,
                         'type': 'make_to_stock',
                         'product_uom' : 1,
@@ -193,11 +213,12 @@ class sale_order(osv.osv):
                 local_order_info = {
                     'dist_order_id' : new_dist_order_id,
                 }            
-                order_obj.write(cr, uid, [order.id], local_order_info, context=context)
+                order.write(local_order_info)
 
         return True
 
-    def push_main_instance(self, cr, uid, ids, context=None):
+    @api.multi
+    def push_main_instance(self):
         """
             Push Order to main instance and check if objects must create if needed.
             Objects : Partner, Products...
@@ -205,24 +226,22 @@ class sale_order(osv.osv):
         """
 
 
-        if not context:
-            context = {}
         #assert len(ids) == 1, 'This option should only be used for a single id at a time.'
 
         _logger.info("--> push_main_instance <--")
 
         # Prepare the connection to the server
 
-        odoo_connect = self._main_odoo_instance_connect(cr,uid,ids, context)
+        odoo_connect = self._main_odoo_instance_connect()
         
         if odoo_connect:
             # Check if Partner in Order is in Master Odoo instance
-            self._export_partner(cr,uid,ids, odoo_connect, context)
+            self._export_partner(odoo_connect)
             # Check if Products in Order is in Master Odoo instance
-            self._export_products(cr,uid,ids, odoo_connect, context)
+            self._export_products(odoo_connect)
 
             # Push Order to Master Odoo instance
-            self._export_order(cr,uid,ids, odoo_connect, context)
+            self._export_order(odoo_connect)
 
         return True
 

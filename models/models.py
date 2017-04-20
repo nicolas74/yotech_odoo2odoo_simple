@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    Yotech module
-#    Copyright (C) 2014-2015 Yotech (<http://yotech.pro>).
+#    Copyright (C) 2014-2017 Yotech (<http://yotech.pro>).
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -19,39 +19,38 @@
 #
 ##############################################################################
 
-import openerp.addons.decimal_precision as dp
-from openerp.tools.float_utils import float_round, float_compare
-
-from openerp import api
-from openerp.osv import fields, osv
-
-from openerp.tools.translate import _
+from odoo import api, fields, models, tools, _
+import odoo.addons.decimal_precision as dp
+from odoo.tools.translate import html_translate
 
 import logging
 _logger = logging.getLogger(__name__)
 
-
-class o2o_simple_config_settings(osv.TransientModel):
+class o2o_simple_config_settings(models.TransientModel):
     _name = 'o2o_simple.config.settings'
     _inherit = 'res.config.settings'
 
+    yo_o2o_username = fields.Char(string='Username')
+    yo_o2o_password = fields.Char(string='Password')
+    yo_o2o_dbname = fields.Char(string='DataBase Name')
+    yo_o2o_url = fields.Char(string='Url')
+    yo_o2o_port = fields.Char(string='Port')
+    yo_o2o_instance_type = fields.Selection([
+        ('master', 'Master'),
+        ('slave', 'Slave'),
+    ], "Instance Type", default='slave', help="Adds an availability status on the web product page.")
+    yo_o2o_default_dist_warehouse_id = fields.Char(string='Default Dist WareHouse ID')
+    yo_o2o_default_product_internal_categ_id = fields.Char(string='Default Product internal Categ ID')
 
-    _columns = {
-        'yo_o2o_username': fields.char('Username'),
-        'yo_o2o_password': fields.char('Password'),
-        'yo_o2o_dbname': fields.char('DataBase Name'),
-        'yo_o2o_url': fields.char('Url'),
-        'yo_o2o_port': fields.char('Port'),
-        'yo_o2o_instance_type': fields.selection([('master', 'Master'), ('slave','Slave')], 'Instance Type'),
-        'yo_o2o_default_dist_warehouse_id' :fields.char('Default Dist WareHouse ID'),
-        'yo_o2o_default_product_internal_categ_id' : fields.char('Default Product internal Categ ID'),
-    }
+    # @api.model
+    # def get_default_o2o_simple_config_settings(self):
+    #     result = {
+    #         'username': self.env['ir.values'].get_defaults_dict('o2o_simple_config_settings').get('username'),
+    #         'password': self.env['ir.values'].get_defaults_dict('o2o_simple_config_settings').get('password'),
+    #     }
+    #     return result
 
-    _defaults = {
-        'instance_type' : 'slave'
-    }
-
-    @api.multi
+    @api.model
     def set_o2o_simple_config(self):
         set_param = self.env['ir.config_parameter'].set_param
         username = self[0].yo_o2o_username or ''
@@ -71,8 +70,17 @@ class o2o_simple_config_settings(osv.TransientModel):
         default_product_internal_categ_id = self[0].yo_o2o_default_product_internal_categ_id or ''
         set_param('yo_o2o_default_product_internal_categ_id', default_product_internal_categ_id)
 
-    @api.multi
-    def get_default_o2o_simple_config(self):
+    # @api.model
+    # def get_default_sale_delivery_settings(self, fields):
+    #     sale_delivery_settings = 'none'
+    #     if self.env['ir.module.module'].search([('name', '=', 'delivery')], limit=1).state in ('installed', 'to install', 'to upgrade'):
+    #         sale_delivery_settings = 'internal'
+    #         if self.env['ir.module.module'].search([('name', '=', 'website_sale_delivery')], limit=1).state in ('installed', 'to install', 'to upgrade'):
+    #             sale_delivery_settings = 'website'
+    #     return {'sale_delivery_settings': sale_delivery_settings}
+
+    @api.model
+    def get_default_o2o_simple_config(self, fields):
         get_param = self.env['ir.config_parameter'].get_param
         username = get_param('yo_o2o_username', default='')
         password = get_param('yo_o2o_password', default='')
@@ -94,43 +102,31 @@ class o2o_simple_config_settings(osv.TransientModel):
             'yo_o2o_default_product_internal_categ_id' : default_product_internal_categ_id,
         }
 
-class res_partner(osv.osv):
+
+class res_partner(models.Model):
     _inherit = 'res.partner'
 
-    _columns = {
-        'dist_partner_id' : fields.integer('Distant partner ID'),
-    }
+    dist_partner_id = fields.Integer('Distant Partner ID', default=0)
 
-class product_product(osv.osv):
+class ProductProduct(models.Model):
     _inherit = "product.product"
 
-    def create(self, cr, uid, vals, context=None):
-        if context is None:
-            context = {}
-        ctx = dict(context or {}, mail_create_nolog=True)
-        vals['dist_product_id'] = 0
-        new_id = super(product_product, self).create(cr, uid, vals, context=ctx)
+    @api.model
+    def create(self, values):
+        values['dist_product_id'] = 0
+        new_id = super(ProductProduct, self).create(values)
         return new_id
 
-    _columns = {
-        'dist_product_id' : fields.integer('Distant product ID'),
-    }
+    dist_product_id = fields.Integer('Distant Product ID', default=0)    
 
-class sale_order(osv.osv):
+class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    def create(self, cr, uid, vals, context=None):
-        if context is None:
-            context = {}
-        ctx = dict(context or {}, mail_create_nolog=True)
-        vals['dist_order_id'] = 0
-        new_id = super(sale_order, self).create(cr, uid, vals, context=ctx)
+    @api.model
+    def create(self, values):
+        values['dist_order_id'] = 0
+        new_id = super(SaleOrder, self).create(values)
         return new_id
 
-    _columns = {
-        'dist_order_id' : fields.integer('Distant Order ID'),
-    }
+    dist_order_id = fields.Integer('Distant Order ID', default=0)
 
-    _defaults = {
-        'dist_order_id': 0
-    }

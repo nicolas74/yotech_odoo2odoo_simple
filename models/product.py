@@ -19,8 +19,10 @@
 #
 ##############################################################################
 
-from openerp.osv import osv, fields, expression
-from openerp.tools.translate import _
+
+from odoo import api, fields, models, tools, _
+import odoo.addons.decimal_precision as dp
+from odoo.tools.translate import html_translate
 
 import cStringIO
 import contextlib
@@ -39,8 +41,6 @@ import urlparse
 from PIL import Image
 from sys import maxint
 
-import openerp.addons.decimal_precision as dp
-from openerp.tools.float_utils import float_round, float_compare
 
 import logging
 _logger = logging.getLogger(__name__)
