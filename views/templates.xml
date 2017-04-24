@@ -61,6 +61,10 @@
                             <field name="yo_o2o_default_product_internal_categ_id" class="oe_inline"/>
                         </div>
                         <div>
+                            <label for="yo_o2o_sale_order_prefix" string="Sale Order prefix (ex: YOT)" help="This prefix will replace SO main Odoo instance prefix. It allows you to see humanly source of the order"/>
+                            <field name="yo_o2o_sale_order_prefix" class="oe_inline"/>
+                        </div>
+                        <div>
                             <label for="yo_o2o_default_dist_price_list_id" string="Dist Default Price List ID (ex:1)"/>
                             <field name="yo_o2o_default_dist_price_list_id" class="oe_inline"/>
                         </div>
@@ -82,6 +86,7 @@
                     <group string=" Yotech Odoo2Odoo">
                         <button colspan="2" name="push_main_instance" string="Export Order to Account Mgn system" type="object" icon="gtk-execute" class="oe_inline"/>
                         <field name="dist_order_id" readonly="True" />
+                        <field name="dist_order_name" readonly="True" />
                     </group>
                 </field>
             </field>

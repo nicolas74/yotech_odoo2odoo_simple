@@ -20,20 +20,21 @@ class sale_order(osv.osv):
 
         _logger.info("--> _main_odoo_instance_connect <--")
         o2o_simple_config_settings = self.pool.get('o2o_simple.config.settings').search(cr, uid, [])
-        _logger.info("o2o_simple_config_settings =) "+ str(o2o_simple_config_settings))
 
         username = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_username')
         password = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_password')
         url = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_url')
         port = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_port')
         dbname = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_dbname')
+
         default_dist_warehouse_id = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_default_dist_warehouse_id')
         default_product_internal_categ_id = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_default_product_internal_categ_id')
         default_dist_price_list_id = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_default_dist_price_list_id')
-
+        sale_order_prefix = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_sale_order_prefix')
         settings = {
             'default_dist_warehouse_id' : default_dist_warehouse_id,
             'default_product_internal_categ_id' : default_product_internal_categ_id,
+            'sale_order_prefix' : sale_order_prefix,
             'default_dist_price_list_id' : default_dist_price_list_id
         }
 
@@ -167,7 +168,6 @@ class sale_order(osv.osv):
                 'picking_policy': 'direct',
 #                'order_line' : dist_order_lines_info,
             }
-            _logger.info("dist_order_info " + str(dist_order_info))
 
             if order.dist_order_id:
                 _logger.info("Update distant order")
@@ -175,6 +175,19 @@ class sale_order(osv.osv):
                 _logger.info("Create distant order")
 
                 new_dist_order_id = odoo_connect['OdooMainInstance'].create('sale.order',dist_order_info)
+
+                # Update Order name to tag Order to main instance
+                get_new_dist_order_info = dist_order_obj.browse(new_dist_order_id)
+                
+                _logger.info("get_new_dist_order_info " + str(get_new_dist_order_info))
+
+                sale_order_prefix = odoo_connect['settings'].get('sale_order_prefix')
+
+                get_new_dist_order_info = {
+                    'name' : get_new_dist_order_info['name'].replace('SO', sale_order_prefix)
+                }
+
+                odoo_connect['OdooMainInstance'].write('sale.order',new_dist_order_id,get_new_dist_order_info)
 
                 for line in order.order_line:
                     _logger.info("line.discount " + str(line.discount))
@@ -191,15 +204,13 @@ class sale_order(osv.osv):
                         'state' : 'draft'
                     }
                     _logger.info("dist_order_lines_info " + str(dist_order_lines_info))
-                    _logger.info("order.id " + str(order.id))
                     odoo_connect['OdooMainInstance'].create('sale.order.line',dist_order_lines_info)                         
                 
                 # update local info
                 local_order_info = {
                     'dist_order_id' : new_dist_order_id,
+                    'dist_order_name' : get_new_dist_order_info['name'],
                 }
-                _logger.info("local_order_info " + str(local_order_info))
-                _logger.info("order.id " + str(order.id))
                 order_obj.write(cr, uid, [order.id], local_order_info, context=context)
 
         return True

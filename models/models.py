@@ -46,6 +46,7 @@ class o2o_simple_config_settings(osv.TransientModel):
         'yo_o2o_default_dist_warehouse_id' :fields.char('Default Dist WareHouse ID'),
         'yo_o2o_default_product_internal_categ_id' : fields.char('Default Product internal Categ ID'),
         'yo_o2o_default_dist_price_list_id' : fields.char('Default Dist Price List id '),
+        'yo_o2o_sale_order_prefix' : : fields.char('Sale Order Prefix'),
     }
 
     _defaults = {
@@ -73,6 +74,8 @@ class o2o_simple_config_settings(osv.TransientModel):
         set_param('yo_o2o_default_product_internal_categ_id', default_product_internal_categ_id)
         default_dist_price_list_id = self[0].yo_o2o_default_dist_price_list_id or ''
         set_param('yo_o2o_default_dist_price_list_id', default_dist_price_list_id)
+        sale_order_prefix = self[0].yo_o2o_sale_order_prefix or ''
+        set_param('yo_o2o_sale_order_prefix', sale_order_prefix)
 
     @api.multi
     def get_default_o2o_simple_config(self):
@@ -86,6 +89,7 @@ class o2o_simple_config_settings(osv.TransientModel):
         default_dist_warehouse_id = get_param('yo_o2o_default_dist_warehouse_id', default='')
         default_product_internal_categ_id = get_param('yo_o2o_default_product_internal_categ_id', default='')
         default_dist_price_list_id = get_param('yo_o2o_default_dist_price_list_id', default='')
+        sale_order_prefix = get_param('yo_o2o_sale_order_prefix', default='')
 
         return {
             'yo_o2o_username': username,
@@ -96,6 +100,7 @@ class o2o_simple_config_settings(osv.TransientModel):
             'yo_o2o_instance_type' : instance_type,
             'yo_o2o_default_dist_warehouse_id' : default_dist_warehouse_id,
             'yo_o2o_default_product_internal_categ_id' : default_product_internal_categ_id,
+            'yo_o2o_sale_order_prefix' : sale_order_prefix,
             'yo_o2o_default_dist_price_list_id' : default_dist_price_list_id,
         }
 
