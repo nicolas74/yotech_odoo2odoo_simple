@@ -42,6 +42,7 @@ class O2osimpleConfigSettings(models.TransientModel):
     ], "Instance Type", default='slave', help="Adds an availability status on the web product page.")
     yo_o2o_default_dist_warehouse_id = fields.Char(string='Default Dist WareHouse ID')
     yo_o2o_default_product_internal_categ_id = fields.Char(string='Default Product internal Categ ID')
+    yo_o2o_default_dist_price_list_id' = fields.Char(string='Default Dist Price List id ')
     yo_o2o_sale_order_prefix = fields.Char(string='Sale Order Prefix')
 
     @api.model
@@ -63,6 +64,8 @@ class O2osimpleConfigSettings(models.TransientModel):
         set_param('yo_o2o_default_dist_warehouse_id', default_dist_warehouse_id)
         default_product_internal_categ_id = self[0].yo_o2o_default_product_internal_categ_id or ''
         set_param('yo_o2o_default_product_internal_categ_id', default_product_internal_categ_id)
+        default_dist_price_list_id = self[0].yo_o2o_default_dist_price_list_id or ''
+        set_param('yo_o2o_default_dist_price_list_id', default_dist_price_list_id)
         sale_order_prefix = self[0].yo_o2o_sale_order_prefix or ''
         set_param('yo_o2o_sale_order_prefix', sale_order_prefix)
 
@@ -77,6 +80,7 @@ class O2osimpleConfigSettings(models.TransientModel):
         instance_type = get_param('yo_o2o_instance_type', default='')
         default_dist_warehouse_id = get_param('yo_o2o_default_dist_warehouse_id', default='')
         default_product_internal_categ_id = get_param('yo_o2o_default_product_internal_categ_id', default='')
+        default_dist_price_list_id = get_param('yo_o2o_default_dist_price_list_id', default='')
         sale_order_prefix = get_param('yo_o2o_sale_order_prefix', default='')
 
         return {
@@ -89,6 +93,7 @@ class O2osimpleConfigSettings(models.TransientModel):
             'yo_o2o_default_dist_warehouse_id' : default_dist_warehouse_id,
             'yo_o2o_default_product_internal_categ_id' : default_product_internal_categ_id,
             'yo_o2o_sale_order_prefix' : sale_order_prefix,
+            'yo_o2o_default_dist_price_list_id' : default_dist_price_list_id,
         }
 
 

@@ -64,6 +64,10 @@
                         <label for="yo_o2o_sale_order_prefix" string="Sale Order prefix (ex: YOT)" help="This prefix will replace SO main Odoo instance prefix. It allows you to see humanly source of the order"/>
                         <field name="yo_o2o_sale_order_prefix" class="oe_inline"/>
                     </div>
+                    <div>
+                        <label for="yo_o2o_default_dist_price_list_id" string="Dist Default Price List ID (ex:1)"/>
+                        <field name="yo_o2o_default_dist_price_list_id" class="oe_inline"/>
+                    </div>
                 </group>
             </form>
         </field>
@@ -78,7 +82,7 @@
             <!-- <xpath expr="//header" position="inside">
                 <button name="push_main_instance" states="draft,sent,invoice_except" string="Push Odoo main instance" groups="base.group_user"/>
             </xpath> -->
-            <field name="carrier_id" position="after">
+            <field name="currency_id" position="after">
                 <group string=" Yotech Odoo2Odoo">
                     <button colspan="2" name="push_main_instance" string="Export Order to Account Mgn system" type="object"  class="btn btn-default fa fa-download"/>
                     <field name="dist_order_id" readonly="True" />

@@ -53,6 +53,7 @@ class SaleOrder(models.Model):
             'default_product_internal_categ_id' : o2o_simple_settings['yo_o2o_default_product_internal_categ_id'],
             'instance_type': o2o_simple_settings['yo_o2o_instance_type'],
             'sale_order_prefix' : o2o_simple_settings['yo_o2o_sale_order_prefix'],
+            'default_dist_price_list_id' : o2o_simple_settings['yo_o2o_default_dist_price_list_id'],
         }
 
         error = False
@@ -75,7 +76,7 @@ class SaleOrder(models.Model):
 
             # Simple 'raw' query
             user_data = oerp.execute('res.users', 'read', [user.id])
-            print(user_data)
+            #print(user_data)
         else:
             return False
 
@@ -181,8 +182,10 @@ class SaleOrder(models.Model):
                 'partner_id': order.partner_id.dist_partner_id,
                 'partner_invoice_id': order.partner_invoice_id.dist_partner_id,
                 'partner_shipping_id': order.partner_shipping_id.dist_partner_id,
+                'pricelist_id':odoo_connect['settings'].get('default_dist_price_list_id'),
                 'date_order' : order.date_order,
                 'warehouse_id' : warehouse_id,
+                'picking_policy': 'direct',
 #                'order_line' : dist_order_lines_info,
             }
 
@@ -190,6 +193,7 @@ class SaleOrder(models.Model):
                 _logger.info("Update distant order")
             else :
                 _logger.info("Create distant order")
+
                 new_dist_order_id = odoo_connect['OdooMainInstance'].create('sale.order',dist_order_info)
 
                 # Update Order name to tag Order to main instance
@@ -226,7 +230,7 @@ class SaleOrder(models.Model):
                 local_order_info = {
                     'dist_order_id' : new_dist_order_id,
                     'dist_order_name' : get_new_dist_order_info['name'],
-                }            
+                }
                 order.write(local_order_info)
 
         return True
