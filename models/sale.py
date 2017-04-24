@@ -167,6 +167,9 @@ class sale_order(osv.osv):
                 'pricelist_id':odoo_connect['settings'].get('default_dist_price_list_id'),
                 'date_order' : order.date_order,
                 'warehouse_id' : warehouse_id,
+                'amount_tax': order.amount_tax,
+                'amount_untaxed': order.amount_untaxed,
+                'amount_total': order.amount_total,
                 'company_id' : odoo_connect['settings'].get('default_dist_company_id'),
                 'picking_policy': 'direct',
 #                'order_line' : dist_order_lines_info,
@@ -199,17 +202,19 @@ class sale_order(osv.osv):
                         'product_id' : line.product_id.dist_product_id,
                         'product_uom_qty' : line.product_uom_qty,
                         'price_unit' : line.price_unit,
+                        #'price_subtotal' : line.price_subtotal,
                         'discount' : line.discount,
                         'company_id' : odoo_connect['settings'].get('default_dist_company_id'),
                         'delay' : line.delay,
                         'name' : line.name,
                         'type': 'make_to_stock',
+                        'tax_id': [(6, 0, [line.tax_id.dist_tax_id])],
                         'product_uom' : 1,
                         'state' : 'draft'
                     }
                     _logger.info("dist_order_lines_info " + str(dist_order_lines_info))
-                    odoo_connect['OdooMainInstance'].create('sale.order.line',dist_order_lines_info)                         
-                
+                    odoo_connect['OdooMainInstance'].create('sale.order.line',dist_order_lines_info)
+
                 # update local info
                 local_order_info = {
                     'dist_order_id' : new_dist_order_id,

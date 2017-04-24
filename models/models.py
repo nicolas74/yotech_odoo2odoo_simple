@@ -117,6 +117,13 @@ class res_partner(osv.osv):
         'dist_partner_id' : fields.integer('Distant partner ID'),
     }
 
+class account_tax(osv.osv):
+    _inherit = 'account.tax'
+
+    _columns = {
+        'dist_tax_id' : fields.integer('Distant Taxe ID'),
+    }
+
 class product_product(osv.osv):
     _inherit = "product.product"
 
@@ -140,6 +147,7 @@ class sale_order(osv.osv):
             context = {}
         ctx = dict(context or {}, mail_create_nolog=True)
         vals['dist_order_id'] = 0
+        vals['dist_order_name'] = ''
         new_id = super(sale_order, self).create(cr, uid, vals, context=ctx)
         return new_id
 

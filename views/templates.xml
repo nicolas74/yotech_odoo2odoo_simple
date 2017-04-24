@@ -109,5 +109,19 @@
             </field>
         </record>
 
+        <record id="yotech_odoo2odoo_simple_view_tax_form" model="ir.ui.view">
+            <field name="name">yotech_odoo2odoo.account.tax.form</field>
+            <field name="model">account.tax</field>
+            <field name="inherit_id" ref="account.view_tax_form"/>
+            <field name="arch" type="xml">
+                <notebook position="inside">
+                    <page string="Yotech o2o">
+                        <group string="Dist Tax ID">
+                            <field name="dist_tax_id" />
+                        </group>
+                    </page>
+                </notebook>
+            </field>
+        </record>
     </data>
 </openerp>
