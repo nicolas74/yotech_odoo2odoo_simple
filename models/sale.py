@@ -29,10 +29,12 @@ class sale_order(osv.osv):
         dbname = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_dbname')
         default_dist_warehouse_id = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_default_dist_warehouse_id')
         default_product_internal_categ_id = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_default_product_internal_categ_id')
+        default_dist_price_list_id = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_default_dist_price_list_id')
 
         settings = {
             'default_dist_warehouse_id' : default_dist_warehouse_id,
             'default_product_internal_categ_id' : default_product_internal_categ_id,
+            'default_dist_price_list_id' : default_dist_price_list_id
         }
 
         error = False
@@ -159,8 +161,10 @@ class sale_order(osv.osv):
                 'partner_id': order.partner_id.dist_partner_id,
                 'partner_invoice_id': order.partner_invoice_id.dist_partner_id,
                 'partner_shipping_id': order.partner_shipping_id.dist_partner_id,
+                'pricelist_id':odoo_connect['settings'].get('default_dist_price_list_id'),
                 'date_order' : order.date_order,
                 'warehouse_id' : warehouse_id,
+                'picking_policy': 'direct',
 #                'order_line' : dist_order_lines_info,
             }
             _logger.info("dist_order_info " + str(dist_order_info))
@@ -186,13 +190,16 @@ class sale_order(osv.osv):
                         'product_uom' : 1,
                         'state' : 'draft'
                     }
-                    _logger.info("dist_order_lines_info " + str(dist_order_lines_info))
+                    _logger.info("TITI dist_order_lines_info " + str(dist_order_lines_info))
+                    _logger.info("order.id " + str(order.id))
                     odoo_connect['OdooMainInstance'].create('sale.order.line',dist_order_lines_info)                         
                 
                 # update local info
                 local_order_info = {
                     'dist_order_id' : new_dist_order_id,
-                }            
+                }
+                _logger.info("local_order_info " + str(local_order_info))
+                _logger.info("order.id " + str(order.id))
                 order_obj.write(cr, uid, [order.id], local_order_info, context=context)
 
         return True

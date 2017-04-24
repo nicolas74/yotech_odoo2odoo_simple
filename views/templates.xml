@@ -60,6 +60,10 @@
                             <label for="yo_o2o_default_product_internal_categ_id" string="Product Internal Categ (ex:2)"/>
                             <field name="yo_o2o_default_product_internal_categ_id" class="oe_inline"/>
                         </div>
+                        <div>
+                            <label for="yo_o2o_default_dist_price_list_id" string="Dist Default Price List ID (ex:1)"/>
+                            <field name="yo_o2o_default_dist_price_list_id" class="oe_inline"/>
+                        </div>
                     </group>
                 </form>
             </field>
@@ -74,7 +78,7 @@
                 <!-- <xpath expr="//header" position="inside">
                     <button name="push_main_instance" states="draft,sent,invoice_except" string="Push Odoo main instance" groups="base.group_user"/>
                 </xpath> -->
-                <field name="weight_total" position="after">
+                <field name="currency_id" position="after">
                     <group string=" Yotech Odoo2Odoo">
                         <button colspan="2" name="push_main_instance" string="Export Order to Account Mgn system" type="object" icon="gtk-execute" class="oe_inline"/>
                         <field name="dist_order_id" readonly="True" />
