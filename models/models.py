@@ -45,12 +45,14 @@ class o2o_simple_config_settings(osv.TransientModel):
         'yo_o2o_instance_type': fields.selection([('master', 'Master'), ('slave','Slave')], 'Instance Type'),
         'yo_o2o_default_dist_warehouse_id' :fields.char('Default Dist WareHouse ID'),
         'yo_o2o_default_product_internal_categ_id' : fields.char('Default Product internal Categ ID'),
-        'yo_o2o_default_dist_price_list_id' : fields.char('Default Dist Price List id '),
-        'yo_o2o_sale_order_prefix' : : fields.char('Sale Order Prefix'),
+        'yo_o2o_default_dist_price_list_id' : fields.char('Default Dist Price List ID'),
+        'yo_o2o_sale_order_prefix' : fields.char('Sale Order Prefix'),
+        'yo_o2o_default_dist_company_id' : fields.char('Default Dist Company ID'),
     }
 
     _defaults = {
-        'instance_type' : 'slave'
+        'yo_o2o_instance_type' : 'slave',
+        'yo_o2o_default_dist_company_id' : '1'
     }
 
     @api.multi
@@ -76,6 +78,8 @@ class o2o_simple_config_settings(osv.TransientModel):
         set_param('yo_o2o_default_dist_price_list_id', default_dist_price_list_id)
         sale_order_prefix = self[0].yo_o2o_sale_order_prefix or ''
         set_param('yo_o2o_sale_order_prefix', sale_order_prefix)
+        default_dist_company_id = self[0].yo_o2o_default_dist_company_id or ''
+        set_param('yo_o2o_default_dist_company_id', default_dist_company_id)
 
     @api.multi
     def get_default_o2o_simple_config(self):
@@ -90,6 +94,7 @@ class o2o_simple_config_settings(osv.TransientModel):
         default_product_internal_categ_id = get_param('yo_o2o_default_product_internal_categ_id', default='')
         default_dist_price_list_id = get_param('yo_o2o_default_dist_price_list_id', default='')
         sale_order_prefix = get_param('yo_o2o_sale_order_prefix', default='')
+        default_dist_company_id = get_param('yo_o2o_default_dist_company_id', default='')
 
         return {
             'yo_o2o_username': username,
@@ -102,6 +107,7 @@ class o2o_simple_config_settings(osv.TransientModel):
             'yo_o2o_default_product_internal_categ_id' : default_product_internal_categ_id,
             'yo_o2o_sale_order_prefix' : sale_order_prefix,
             'yo_o2o_default_dist_price_list_id' : default_dist_price_list_id,
+            'yo_o2o_default_dist_company_id' : default_dist_company_id,
         }
 
 class res_partner(osv.osv):
@@ -139,6 +145,7 @@ class sale_order(osv.osv):
 
     _columns = {
         'dist_order_id' : fields.integer('Distant Order ID'),
+        'dist_order_name' : fields.char('Distant Order Name',size=6),
     }
 
     _defaults = {

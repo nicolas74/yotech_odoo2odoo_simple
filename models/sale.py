@@ -31,11 +31,13 @@ class sale_order(osv.osv):
         default_product_internal_categ_id = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_default_product_internal_categ_id')
         default_dist_price_list_id = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_default_dist_price_list_id')
         sale_order_prefix = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_sale_order_prefix')
+        default_dist_company_id = self.pool.get('ir.config_parameter').get_param(cr, uid, 'yo_o2o_default_dist_company_id')
         settings = {
             'default_dist_warehouse_id' : default_dist_warehouse_id,
             'default_product_internal_categ_id' : default_product_internal_categ_id,
             'sale_order_prefix' : sale_order_prefix,
-            'default_dist_price_list_id' : default_dist_price_list_id
+            'default_dist_price_list_id' : default_dist_price_list_id,
+            'default_dist_company_id' : default_dist_company_id
         }
 
         error = False
@@ -165,6 +167,7 @@ class sale_order(osv.osv):
                 'pricelist_id':odoo_connect['settings'].get('default_dist_price_list_id'),
                 'date_order' : order.date_order,
                 'warehouse_id' : warehouse_id,
+                'company_id' : odoo_connect['settings'].get('default_dist_company_id'),
                 'picking_policy': 'direct',
 #                'order_line' : dist_order_lines_info,
             }
@@ -197,6 +200,7 @@ class sale_order(osv.osv):
                         'product_uom_qty' : line.product_uom_qty,
                         'price_unit' : line.price_unit,
                         'discount' : line.discount,
+                        'company_id' : odoo_connect['settings'].get('default_dist_company_id'),
                         'delay' : line.delay,
                         'name' : line.name,
                         'type': 'make_to_stock',

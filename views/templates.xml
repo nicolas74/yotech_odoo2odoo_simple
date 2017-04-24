@@ -68,6 +68,10 @@
                             <label for="yo_o2o_default_dist_price_list_id" string="Dist Default Price List ID (ex:1)"/>
                             <field name="yo_o2o_default_dist_price_list_id" class="oe_inline"/>
                         </div>
+                        <div>
+                            <label for="yo_o2o_default_dist_company_id" string="Dist Default Dist Company ID (default:1)"/>
+                            <field name="yo_o2o_default_dist_company_id" class="oe_inline"/>
+                        </div>
                     </group>
                 </form>
             </field>
