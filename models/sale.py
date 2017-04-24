@@ -145,7 +145,7 @@ class sale_order(osv.osv):
 
         _logger.info("--> _export_order <--")
         order_obj = self.pool.get('sale.order')
-        order_line_obj = self.pool.get('sale.order')
+
         dist_order_obj = odoo_connect['OdooMainInstance'].get('sale.order')
 
         for order in order_obj.browse(cr, uid, ids):
