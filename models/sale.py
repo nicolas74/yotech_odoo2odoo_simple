@@ -190,7 +190,7 @@ class sale_order(osv.osv):
                         'product_uom' : 1,
                         'state' : 'draft'
                     }
-                    _logger.info("TITI dist_order_lines_info " + str(dist_order_lines_info))
+                    _logger.info("dist_order_lines_info " + str(dist_order_lines_info))
                     _logger.info("order.id " + str(order.id))
                     odoo_connect['OdooMainInstance'].create('sale.order.line',dist_order_lines_info)                         
                 
