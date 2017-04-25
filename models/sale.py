@@ -146,10 +146,10 @@ class SaleOrder(models.Model):
                 if line.product_id.dist_product_id:
                     dist_product_id = dist_product_obj.search([('id','=',line.product_id.dist_product_id)])
                     _logger.info("dist_product_id =) " + str(dist_product_id))
-                    for dist_product in dist_product_obj.browse(dist_product_id):
-                        _logger.info("Odoo main instance product =) " + str(dist_product))
+                    #for dist_product in dist_product_obj.browse(dist_product_id):
+                    #    _logger.info("Odoo main instance product =) " + str(dist_product))
                     # Update Dist Product
-                    odoo_connect['OdooMainInstance'].write('product.product',line.product_id.dist_product_id)
+                    #odoo_connect['OdooMainInstance'].write('product.product',line.product_id.dist_product_id,dist_product_info)
                 else:
                     _logger.info("Create distante Product ")
                     # Create Dist Product
