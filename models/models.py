@@ -42,8 +42,9 @@ class O2osimpleConfigSettings(models.TransientModel):
     ], "Instance Type", default='slave', help="Adds an availability status on the web product page.")
     yo_o2o_default_dist_warehouse_id = fields.Char(string='Default Dist WareHouse ID')
     yo_o2o_default_product_internal_categ_id = fields.Char(string='Default Product internal Categ ID')
-    yo_o2o_default_dist_price_list_id' = fields.Char(string='Default Dist Price List id ')
+    yo_o2o_default_dist_price_list_id = fields.Char(string='Default Dist Price List ID ')
     yo_o2o_sale_order_prefix = fields.Char(string='Sale Order Prefix')
+    yo_o2o_default_dist_company_id = fields.Char(string='Default Dist Company ID')
 
     @api.model
     def set_o2o_simple_config(self):
@@ -68,6 +69,8 @@ class O2osimpleConfigSettings(models.TransientModel):
         set_param('yo_o2o_default_dist_price_list_id', default_dist_price_list_id)
         sale_order_prefix = self[0].yo_o2o_sale_order_prefix or ''
         set_param('yo_o2o_sale_order_prefix', sale_order_prefix)
+        default_dist_company_id = self[0].yo_o2o_default_dist_company_id or ''
+        set_param('yo_o2o_default_dist_company_id', default_dist_company_id)
 
     @api.model
     def get_default_o2o_simple_config(self,fields):
@@ -82,6 +85,7 @@ class O2osimpleConfigSettings(models.TransientModel):
         default_product_internal_categ_id = get_param('yo_o2o_default_product_internal_categ_id', default='')
         default_dist_price_list_id = get_param('yo_o2o_default_dist_price_list_id', default='')
         sale_order_prefix = get_param('yo_o2o_sale_order_prefix', default='')
+        default_dist_company_id = get_param('yo_o2o_default_dist_company_id', default='')
 
         return {
             'yo_o2o_username': username,
@@ -94,6 +98,7 @@ class O2osimpleConfigSettings(models.TransientModel):
             'yo_o2o_default_product_internal_categ_id' : default_product_internal_categ_id,
             'yo_o2o_sale_order_prefix' : sale_order_prefix,
             'yo_o2o_default_dist_price_list_id' : default_dist_price_list_id,
+            'yo_o2o_default_dist_company_id' : default_dist_company_id,
         }
 
 
@@ -101,6 +106,12 @@ class ResPartner(models.Model):
     _inherit = 'res.partner'
 
     dist_partner_id = fields.Integer('Distant Partner ID', default=0)
+
+class AccountTax(models.Model):
+    _inherit = 'account.tax'
+
+    dist_tax_id = fields.Integer('Distant Taxe ID', default=0)
+
 
 class ProductProduct(models.Model):
     _inherit = "product.product"
@@ -119,6 +130,7 @@ class SaleOrder(models.Model):
     @api.model
     def create(self, values):
         values['dist_order_id'] = 0
+        values['dist_order_name'] = ''
         new_id = super(SaleOrder, self).create(values)
         return new_id
 
