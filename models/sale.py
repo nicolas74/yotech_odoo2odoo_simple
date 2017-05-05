@@ -47,6 +47,7 @@ class SaleOrder(models.Model):
         url = o2o_simple_settings['yo_o2o_url']
         port = o2o_simple_settings['yo_o2o_port']
 
+        default_dist_company_id = o2o_simple_settings['yo_o2o_default_dist_company_id']
 
         settings = {
             'default_dist_warehouse_id' : o2o_simple_settings['yo_o2o_default_dist_warehouse_id'],
@@ -54,6 +55,7 @@ class SaleOrder(models.Model):
             'instance_type': o2o_simple_settings['yo_o2o_instance_type'],
             'sale_order_prefix' : o2o_simple_settings['yo_o2o_sale_order_prefix'],
             'default_dist_price_list_id' : o2o_simple_settings['yo_o2o_default_dist_price_list_id'],
+            'default_dist_company_id' : default_dist_company_id
         }
 
         error = False
