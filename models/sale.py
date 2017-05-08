@@ -66,44 +66,64 @@ class sale_order(osv.osv):
 
         return {'OdooMainInstance': oerp , 'user': user , 'settings' : settings }
 
-    def _export_partner(self, cr, uid, ids, odoo_connect, context=None):
+    def _mgn_dist_partner(self, cr, uid, ids, odoo_connect, partner_id, context=None):
+
+        dist_partner_obj = odoo_connect['OdooMainInstance'].get('res.partner')
+        res_partner_obj = self.pool.get('res.partner')
+
+        dist_partner_id = dist_partner_obj.search([('id','=',partner_id.dist_partner_id)])
+
+        dist_partner_info = {
+            'name': partner_id.name,
+            'email': partner_id.email,
+            'phone': partner_id.phone,
+            'mobile': partner_id.mobile,
+            'fax': partner_id.fax,
+            'street': partner_id.street,
+            'street2': partner_id.street2,
+            'zip': partner_id.zip,
+            'city': partner_id.city
+#                    'country_id': order.partner_invoice_id.country_id
+        }
+
+        if partner_id.parent_id:
+            if partner_id.parent_id.dist_partner_id:
+                dist_partner_info['parent_id'] = partner_id.parent_id.dist_partner_id
+            else:
+                _logger.error("Local Parent id but no dist parent id yet")
+
+        if partner_id.dist_partner_id:
+            _logger.info("dist_partner_id =) " + str(partner_id.dist_partner_id))
+            for dist_partner in dist_partner_obj.browse(dist_partner_id):
+                _logger.info("Odoo main instance partner =) " + str(dist_partner))
+            #Update Dist Partner
+            odoo_connect['OdooMainInstance'].write('res.partner',partner_id.dist_partner_id,dist_partner_info)
+        else:
+            _logger.info("Create distante Partner ")
+            #Create Dist Partner
+            new_dist_partner_id = odoo_connect['OdooMainInstance'].create('res.partner',dist_partner_info)
+            _logger.info("dist_partner_info =) " + str(dist_partner_info))
+            local_partner_info = {
+                'dist_partner_id' : new_dist_partner_id,
+            }
+            res_partner_obj.write(cr, uid, [partner_id.id], local_partner_info, context=context)
+
+    def _export_partners(self, cr, uid, ids, odoo_connect, context=None):
         """ Export partner if needed """
 
-        _logger.info("--> _export_partner <--")
+        _logger.info("--> _export_partners <--")
         order_obj = self.pool.get('sale.order')
-        res_partner_obj = self.pool.get('res.partner')
-        dist_partner_obj = odoo_connect['OdooMainInstance'].get('res.partner')
 
         for order in order_obj.browse(cr, uid, ids):
-            _logger.info("order.partner_id =) " + str(order.partner_id))
-            dist_partner_info = {
-                'name': order.partner_id.name,
-                'email': order.partner_id.email,
-                'phone': order.partner_id.phone,
-                'mobile': order.partner_id.mobile,
-                'fax': order.partner_id.fax,
-                'street': order.partner_invoice_id.street,
-                'street2': order.partner_invoice_id.street2,
-                'zip': order.partner_invoice_id.zip,
-                'city': order.partner_invoice_id.city
-#                    'country_id': order.partner_invoice_id.country_id
-            }
-            if order.partner_id.dist_partner_id:
-                dist_partner_id = dist_partner_obj.search([('id','=',order.partner_id.dist_partner_id)])
-                _logger.info("dist_partner_id =) " + str(dist_partner_id))
-                for dist_partner in dist_partner_obj.browse(dist_partner_id):
-                    _logger.info("Odoo main instance partner =) " + str(dist_partner))
-                #Update Dist Partner
-                odoo_connect['OdooMainInstance'].write('res.partner',order.partner_id.dist_partner_id,dist_partner_info)
-            else:
-                _logger.info("Create distante Partner ")
-                #Create Dist Partner
-                new_dist_partner_id = odoo_connect['OdooMainInstance'].create('res.partner',dist_partner_info)
-                _logger.info("dist_partner_info =) " + str(dist_partner_info))
-                local_partner_info = {
-                    'dist_partner_id' : new_dist_partner_id,                    
-                }
-                res_partner_obj.write(cr, uid, [order.partner_id.id], local_partner_info, context=context)
+
+            if order.partner_id:
+                self._mgn_dist_partner(cr,uid,ids, odoo_connect, order.partner_id, context)
+
+            if order.partner_invoice_id:
+                self._mgn_dist_partner(cr,uid,ids, odoo_connect, order.partner_invoice_id, context)
+
+            if order.partner_shipping_id:
+                self._mgn_dist_partner(cr,uid,ids, odoo_connect, order.partner_shipping_id, context)
 
         return True
 
@@ -244,7 +264,7 @@ class sale_order(osv.osv):
         
         if odoo_connect:
             # Check if Partner in Order is in Master Odoo instance
-            self._export_partner(cr,uid,ids, odoo_connect, context)
+            self._export_partners(cr,uid,ids, odoo_connect, context)
             # Check if Products in Order is in Master Odoo instance
             self._export_products(cr,uid,ids, odoo_connect, context)
 
