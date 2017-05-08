@@ -85,35 +85,37 @@ class SaleOrder(models.Model):
         return {'OdooMainInstance': oerp , 'user': user , 'settings' : settings }
 
     @api.multi
-    def _export_partner(self, odoo_connect):
+    def _mgn_dist_partner(self, odoo_connect, partner_id):
         """ Export partner if needed """
-
-        _logger.info("--> _export_partner <--")
 
         dist_partner_obj = odoo_connect['OdooMainInstance'].get('res.partner')
 
 
-        for order in self:
-            _logger.info("order.partner_id =) " + str(order.partner_id))
-            dist_partner_info = {
-                'name': order.partner_id.name,
-                'email': order.partner_id.email,
-                'phone': order.partner_id.phone,
-                'mobile': order.partner_id.mobile,
-                'fax': order.partner_id.fax,
-                'street': order.partner_invoice_id.street,
-                'street2': order.partner_invoice_id.street2,
-                'zip': order.partner_invoice_id.zip,
-                'city': order.partner_invoice_id.city
-#                    'country_id': order.partner_invoice_id.country_id
-            }
-            if order.partner_id.dist_partner_id:
-                dist_partner_id = dist_partner_obj.search([('id','=',order.partner_id.dist_partner_id)])
-                _logger.info("dist_partner_id =) " + str(dist_partner_id))
+        dist_partner_info = {
+            'name': partner_id.name,
+            'email': partner_id.email,
+            'phone': partner_id.phone,
+            'mobile': partner_id.mobile,
+            'fax': partner_id.fax,
+            'street': partner_id.street,
+            'street2': partner_id.street2,
+            'zip': partner_id.zip,
+            'city': partner_id.city
+	#   'country_id': partner_id.country_id
+	    }
+
+        if partner_id.parent_id:
+            if partner_id.parent_id.dist_partner_id:
+                dist_partner_info['parent_id'] = partner_id.parent_id.dist_partner_id
+            else:
+                _logger.error("Local Parent id but no dist parent id yet")
+
+            if partner_id.dist_partner_id:
+                dist_partner_id = dist_partner_obj.search([('id','=',partner_id.dist_partner_id)])
                 for dist_partner in dist_partner_obj.browse(dist_partner_id):
                     _logger.info("Odoo main instance partner =) " + str(dist_partner))
                 #Update Dist Partner
-                odoo_connect['OdooMainInstance'].write('res.partner',order.partner_id.dist_partner_id,dist_partner_info)
+                odoo_connect['OdooMainInstance'].write('res.partner',partner_id.dist_partner_id,dist_partner_info)
             else:
                 _logger.info("Create distante Partner ")
                 #Create Dist Partner
@@ -122,7 +124,27 @@ class SaleOrder(models.Model):
                 local_partner_info = {
                     'dist_partner_id' : new_dist_partner_id,
                 }
-                order.partner_id.write(local_partner_info)
+                partner_id.write(local_partner_info)
+
+        return True
+
+    @api.multi
+    def _export_partners(self, odoo_connect):
+
+        _logger.info("--> _export_partners <--")
+
+        order_obj = self.pool.get('sale.order')
+
+        for order in order_obj.browse(cr, uid, ids):
+
+            if order.partner_id:
+                self._mgn_dist_partner(odoo_connect, order.partner_id)
+
+            if order.partner_invoice_id:
+                self._mgn_dist_partner(odoo_connect, order.partner_invoice_id)
+
+            if order.partner_shipping_id:
+                self._mgn_dist_partner(odoo_connect, order.partner_shipping_id)
 
         return True
 
@@ -263,7 +285,8 @@ class SaleOrder(models.Model):
         
         if odoo_connect:
             # Check if Partner in Order is in Master Odoo instance
-            self._export_partner(odoo_connect)
+            self._export_partners(odoo_connect)
+
             # Check if Products in Order is in Master Odoo instance
             self._export_products(odoo_connect)
 
