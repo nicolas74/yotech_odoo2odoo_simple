@@ -83,7 +83,7 @@ class sale_order(osv.osv):
             'street2': partner_id.street2,
             'zip': partner_id.zip,
             'city': partner_id.city
-#                    'country_id': order.partner_invoice_id.country_id
+#                    'country_id': partner_id.country_id
         }
 
         if partner_id.parent_id:
@@ -93,7 +93,6 @@ class sale_order(osv.osv):
                 _logger.error("Local Parent id but no dist parent id yet")
 
         if partner_id.dist_partner_id:
-            _logger.info("dist_partner_id =) " + str(partner_id.dist_partner_id))
             for dist_partner in dist_partner_obj.browse(dist_partner_id):
                 _logger.info("Odoo main instance partner =) " + str(dist_partner))
             #Update Dist Partner
@@ -265,6 +264,7 @@ class sale_order(osv.osv):
         if odoo_connect:
             # Check if Partner in Order is in Master Odoo instance
             self._export_partners(cr,uid,ids, odoo_connect, context)
+
             # Check if Products in Order is in Master Odoo instance
             self._export_products(cr,uid,ids, odoo_connect, context)
 
