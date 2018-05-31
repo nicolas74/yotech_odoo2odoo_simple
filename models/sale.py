@@ -88,11 +88,8 @@ class SaleOrder(models.Model):
     def _export_partner(self, odoo_connect):
         """ Export partner if needed """
 
-        _logger.info("--> _export_partner <--")
-
         dist_partner_obj = odoo_connect['OdooMainInstance'].get('res.partner')
         dist_country_obj = odoo_connect['OdooMainInstance'].get('res.country')
-
 
         for order in self:
             _logger.info("order.partner_id =) " + str(order.partner_id))
@@ -124,6 +121,7 @@ class SaleOrder(models.Model):
             if partner_id.dist_partner_id:
                 dist_partner_id = dist_partner_obj.search([('id','=',partner_id.dist_partner_id)])
                 _logger.info("dist_partner_id =) " + str(dist_partner_id))
+
                 for dist_partner in dist_partner_obj.browse(dist_partner_id):
                     _logger.info("Odoo main instance partner =) " + str(dist_partner))
                 #Update Dist Partner
@@ -138,14 +136,6 @@ class SaleOrder(models.Model):
                 }
                 partner_id.write(local_partner_info)
 
-
-            dist_partner_info = {
-                'name': order.partner_id.name,
-                'email': order.partner_id.email,
-                'phone': order.partner_id.phone,
-                'mobile': order.partner_id.mobile,
-                'fax': order.partner_id.fax,
-            }
         return True
 
     @api.multi
@@ -286,6 +276,7 @@ class SaleOrder(models.Model):
         if odoo_connect:
             # Check if Partner in Order is in Master Odoo instance
             self._export_partner(odoo_connect)
+
             # Check if Products in Order is in Master Odoo instance
             self._export_products(odoo_connect)
 
