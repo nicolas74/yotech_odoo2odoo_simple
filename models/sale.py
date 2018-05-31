@@ -91,29 +91,43 @@ class SaleOrder(models.Model):
         _logger.info("--> _export_partner <--")
 
         dist_partner_obj = odoo_connect['OdooMainInstance'].get('res.partner')
+        dist_country_obj = odoo_connect['OdooMainInstance'].get('res.country')
 
 
         for order in self:
             _logger.info("order.partner_id =) " + str(order.partner_id))
+            _logger.info("order.partner_invoice_id.country_id.code =) " + str(order.partner_invoice_id.country_id.code))
+            _logger.info("order.partner_invoice_id.country_id.name =) " + str(order.partner_invoice_id.country_id.name))
+
+        for partner_id in [order.partner_id, order.partner_invoice_id, order.partner_shipping_id]:
+
+            _logger.info("partner Name " + partner_id.name)
+            _logger.info("country_id " + str(partner_id.country_id))
             dist_partner_info = {
-                'name': order.partner_id.name,
-                'email': order.partner_id.email,
-                'phone': order.partner_id.phone,
-                'mobile': order.partner_id.mobile,
-                'fax': order.partner_id.fax,
-                'street': order.partner_invoice_id.street,
-                'street2': order.partner_invoice_id.street2,
-                'zip': order.partner_invoice_id.zip,
-                'city': order.partner_invoice_id.city
-#                    'country_id': order.partner_invoice_id.country_id
+                'name': partner_id.name,
+                'email': partner_id.email,
+                'phone': partner_id.phone,
+                'mobile': partner_id.mobile,
+                'fax': partner_id.fax,
+                'street': partner_id.street,
+                'street2': partner_id.street2,
+                'zip': partner_id.zip,
+                'city': order.partner_id.city
             }
-            if order.partner_id.dist_partner_id:
-                dist_partner_id = dist_partner_obj.search([('id','=',order.partner_id.dist_partner_id)])
+            if partner_id.country_id:
+                dist_country_id = dist_country_obj.search([('name','=',partner_id.country_id.name)])[0]
+                _logger.info("dist_country_id =) " + str(dist_country_id))
+                dist_partner_info['country_id'] = dist_country_id
+
+
+            # Send Partner info
+            if partner_id.dist_partner_id:
+                dist_partner_id = dist_partner_obj.search([('id','=',partner_id.dist_partner_id)])
                 _logger.info("dist_partner_id =) " + str(dist_partner_id))
                 for dist_partner in dist_partner_obj.browse(dist_partner_id):
                     _logger.info("Odoo main instance partner =) " + str(dist_partner))
                 #Update Dist Partner
-                odoo_connect['OdooMainInstance'].write('res.partner',order.partner_id.dist_partner_id,dist_partner_info)
+                odoo_connect['OdooMainInstance'].write('res.partner',partner_id.dist_partner_id,dist_partner_info)
             else:
                 _logger.info("Create distante Partner ")
                 #Create Dist Partner
@@ -122,8 +136,16 @@ class SaleOrder(models.Model):
                 local_partner_info = {
                     'dist_partner_id' : new_dist_partner_id,
                 }
-                order.partner_id.write(local_partner_info)
+                partner_id.write(local_partner_info)
 
+
+            dist_partner_info = {
+                'name': order.partner_id.name,
+                'email': order.partner_id.email,
+                'phone': order.partner_id.phone,
+                'mobile': order.partner_id.mobile,
+                'fax': order.partner_id.fax,
+            }
         return True
 
     @api.multi
@@ -183,7 +205,6 @@ class SaleOrder(models.Model):
             dist_order_info = {
                 'partner_id': order.partner_id.dist_partner_id,
                 'partner_invoice_id': order.partner_invoice_id.dist_partner_id,
-                'partner_shipping_id': order.partner_shipping_id.dist_partner_id,
                 'pricelist_id':odoo_connect['settings'].get('default_dist_price_list_id'),
                 'date_order' : order.date_order,
                 'warehouse_id' : warehouse_id,
@@ -191,9 +212,10 @@ class SaleOrder(models.Model):
                 'amount_untaxed': order.amount_untaxed,
                 'amount_total': order.amount_total,
                 'company_id' : odoo_connect['settings'].get('default_dist_company_id'),
-                'picking_policy': 'direct',
-#                'order_line' : dist_order_lines_info,
+                'picking_policy': 'direct'
             }
+
+            dist_order_info['partner_shipping_id'] = order.partner_shipping_id.dist_partner_id
 
             if order.dist_order_id:
                 _logger.info("Update distant order")
