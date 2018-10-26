@@ -69,9 +69,14 @@ class sale_order(osv.osv):
     def _mgn_dist_partner(self, cr, uid, ids, odoo_connect, partner_id, context=None):
 
         dist_partner_obj = odoo_connect['OdooMainInstance'].get('res.partner')
+        dist_country_obj = odoo_connect['OdooMainInstance'].get('res.country')
         res_partner_obj = self.pool.get('res.partner')
 
         dist_partner_id = dist_partner_obj.search([('id','=',partner_id.dist_partner_id)])
+
+        dist_country_id = dist_country_obj.search([('name','=',partner_id.country_id.name)])[0]
+        _logger.info("dist_country_id =) " + str(dist_country_id))
+
 
         dist_partner_info = {
             'name': partner_id.name,
@@ -82,8 +87,9 @@ class sale_order(osv.osv):
             'street': partner_id.street,
             'street2': partner_id.street2,
             'zip': partner_id.zip,
-            'city': partner_id.city
-#                    'country_id': partner_id.country_id
+            'city': partner_id.city,
+            'company_id' : odoo_connect['settings'].get('default_dist_company_id'),
+            'country_id': dist_country_id
         }
 
         if partner_id.parent_id:
@@ -144,7 +150,7 @@ class sale_order(osv.osv):
                     'type': line.product_id.type,
                     'categ_id': default_product_internal_categ_id
                 }
-
+#                _logger.info("product name =) " + str(line.product_id.name))
                 if line.product_id.dist_product_id:
                     dist_product_id = dist_product_obj.search([('id','=',line.product_id.dist_product_id)])
                     _logger.info("dist_product_id =) " + str(dist_product_id))
@@ -190,8 +196,7 @@ class sale_order(osv.osv):
                 'amount_untaxed': order.amount_untaxed,
                 'amount_total': order.amount_total,
                 'company_id' : odoo_connect['settings'].get('default_dist_company_id'),
-                'picking_policy': 'direct',
-#                'order_line' : dist_order_lines_info,
+                'picking_policy': 'direct'
             }
 
             if order.dist_order_id:
@@ -203,14 +208,16 @@ class sale_order(osv.osv):
 
                 # Update Order name to tag Order to main instance
                 get_new_dist_order_info = dist_order_obj.browse(new_dist_order_id)
-                
+
                 _logger.info("get_new_dist_order_info " + str(get_new_dist_order_info))
 
                 sale_order_prefix = odoo_connect['settings'].get('sale_order_prefix')
 
                 get_new_dist_order_info = {
-                    'name' : get_new_dist_order_info['name'].replace('SO', sale_order_prefix)
+                    'name' : get_new_dist_order_info['name'].replace('YOCH', sale_order_prefix),
                 }
+
+                _logger.info("default_dist_company_id =) " + str(odoo_connect['settings'].get('default_dist_company_id')))
 
                 odoo_connect['OdooMainInstance'].write('sale.order',new_dist_order_id,get_new_dist_order_info)
 
@@ -237,7 +244,7 @@ class sale_order(osv.osv):
                 # update local info
                 local_order_info = {
                     'dist_order_id' : new_dist_order_id,
-                    'dist_order_name' : get_new_dist_order_info['name'],
+                    'dist_order_name' : get_new_dist_order_info['name']
                 }
                 order_obj.write(cr, uid, [order.id], local_order_info, context=context)
 
@@ -260,7 +267,7 @@ class sale_order(osv.osv):
         # Prepare the connection to the server
 
         odoo_connect = self._main_odoo_instance_connect(cr,uid,ids, context)
-        
+
         if odoo_connect:
             # Check if Partner in Order is in Master Odoo instance
             self._export_partners(cr,uid,ids, odoo_connect, context)
@@ -272,5 +279,3 @@ class sale_order(osv.osv):
             self._export_order(cr,uid,ids, odoo_connect, context)
 
         return True
-
-

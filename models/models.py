@@ -153,7 +153,7 @@ class sale_order(osv.osv):
 
     _columns = {
         'dist_order_id' : fields.integer('Distant Order ID'),
-        'dist_order_name' : fields.char('Distant Order Name',size=6),
+        'dist_order_name' : fields.char('Distant Order Name',size=10),
     }
 
     _defaults = {
