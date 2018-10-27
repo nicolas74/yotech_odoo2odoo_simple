@@ -38,8 +38,8 @@ class sale_order(osv.osv):
             'sale_order_prefix' : sale_order_prefix,
             'default_dist_price_list_id' : default_dist_price_list_id,
             'default_dist_company_id' : default_dist_company_id
-        }
 
+        }
         error = False
 
         #oerp = oerplib.OERP(url, protocol='xmlrpc', port=port)
@@ -197,6 +197,7 @@ class sale_order(osv.osv):
                 'amount_total': order.amount_total,
                 'company_id' : odoo_connect['settings'].get('default_dist_company_id'),
                 'picking_policy': 'direct'
+#                'order_line' : dist_order_lines_info,
             }
 
             if order.dist_order_id:
@@ -246,6 +247,8 @@ class sale_order(osv.osv):
                     'dist_order_id' : new_dist_order_id,
                     'dist_order_name' : get_new_dist_order_info['name']
                 }
+                _logger.info("local_order_info " + str(local_order_info))
+                _logger.info("order.id " + str(order.id))
                 order_obj.write(cr, uid, [order.id], local_order_info, context=context)
 
         return True

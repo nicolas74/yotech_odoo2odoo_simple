@@ -48,6 +48,7 @@ class o2o_simple_config_settings(osv.TransientModel):
         'yo_o2o_default_dist_price_list_id' : fields.char('Default Dist Price List ID'),
         'yo_o2o_sale_order_prefix' : fields.char('Sale Order Prefix'),
         'yo_o2o_default_dist_company_id' : fields.char('Default Dist Company ID'),
+        'yo_o2o_default_dist_price_list_id' : fields.char('Default Dist Price List id '),
     }
 
     _defaults = {
@@ -108,6 +109,7 @@ class o2o_simple_config_settings(osv.TransientModel):
             'yo_o2o_sale_order_prefix' : sale_order_prefix,
             'yo_o2o_default_dist_price_list_id' : default_dist_price_list_id,
             'yo_o2o_default_dist_company_id' : default_dist_company_id,
+            'yo_o2o_default_dist_price_list_id' : default_dist_price_list_id,
         }
 
 class res_partner(osv.osv):
