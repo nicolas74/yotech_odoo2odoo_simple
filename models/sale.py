@@ -78,6 +78,7 @@ class SaleOrder(models.Model):
 
             # Simple 'raw' query
             user_data = oerp.execute('res.users', 'read', [user.id])
+            _logger.info("Conn OK User data " + str(user_data))
             #print(user_data)
         else:
             return False
@@ -112,7 +113,10 @@ class SaleOrder(models.Model):
                 'city': order.partner_id.city
             }
             if partner_id.country_id:
-                dist_country_id = dist_country_obj.search([('name','=',partner_id.country_id.name)])[0]
+                # Warning To jonglerie v8 country is in lower case 
+                dist_country_ids = dist_country_obj.search([('code','=',partner_id.country_id.code.lower())])
+                _logger.info("dist_country_ids =) " + str(dist_country_ids))
+                dist_country_id = dist_country_ids[0]
                 _logger.info("dist_country_id =) " + str(dist_country_id))
                 dist_partner_info['country_id'] = dist_country_id
 
