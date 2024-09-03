@@ -106,7 +106,7 @@ class SaleOrder(models.Model):
                 'email': partner_id.email,
                 'phone': partner_id.phone,
                 'mobile': partner_id.mobile,
-                'fax': partner_id.fax,
+                #'fax': partner_id.fax,
                 'street': partner_id.street,
                 'street2': partner_id.street2,
                 'zip': partner_id.zip,
@@ -199,13 +199,13 @@ class SaleOrder(models.Model):
             dist_order_info = {
                 'partner_id': order.partner_id.dist_partner_id,
                 'partner_invoice_id': order.partner_invoice_id.dist_partner_id,
-                'pricelist_id':odoo_connect['settings'].get('default_dist_price_list_id'),
+                'pricelist_id':int(odoo_connect['settings'].get('default_dist_price_list_id')),
                 'date_order' : order.date_order,
                 'warehouse_id' : warehouse_id,
                 'amount_tax': order.amount_tax,
                 'amount_untaxed': order.amount_untaxed,
                 'amount_total': order.amount_total,
-                'company_id' : odoo_connect['settings'].get('default_dist_company_id'),
+                'company_id' : int(odoo_connect['settings'].get('default_dist_company_id')),
                 'picking_policy': 'direct'
             }
 
@@ -240,10 +240,10 @@ class SaleOrder(models.Model):
                         'price_unit' : line.price_unit,
                         #'price_subtotal' : line.price_subtotal,
                         'discount' : line.discount,
-                        'company_id' : odoo_connect['settings'].get('default_dist_company_id'),
+                        'company_id' : int(odoo_connect['settings'].get('default_dist_company_id')),
                         #'delay' : line.delay,
                         'name' : line.name,
-                        'type': 'make_to_stock',
+                        #'type': 'make_to_stock',
                         'tax_id': [(6, 0, [line.tax_id.dist_tax_id])],
                         'product_uom' : 1,
                         'state' : 'draft'
